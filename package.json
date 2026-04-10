@@ -9,7 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "electron:start": "electron .",
-    "build:electron": "vite build && electron-builder"
+    "build:electron": "vite build && electron-builder -p never"
   },
   "build": {
     "appId": "com.ironwill.desktop",
