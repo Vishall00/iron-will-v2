@@ -1,0 +1,6 @@
+{
+  "appId": "com.ironwill.v2",
+  "appName": "Iron Will",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

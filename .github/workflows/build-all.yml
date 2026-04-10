@@ -1,0 +1,71 @@
+name: Multi-Platform CI/CD Pipeline
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+jobs:
+  build-desktop:
+    name: Build Desktop (Windows .exe)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Electron App
+        run: npm run build:electron
+
+      - name: Upload Desktop Installer to Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: release/*.exe
+          
+  build-mobile:
+    name: Build Mobile (Android .apk)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build React App
+        run: npm run build
+        
+      - name: Add Android Android Project
+        run: npx cap add android
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Build Android APK
+        working-directory: ./android
+        run: ./gradlew assembleDebug
+
+      - name: Upload Mobile APK to Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: android/app/build/outputs/apk/debug/app-debug.apk
