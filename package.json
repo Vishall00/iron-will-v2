@@ -14,6 +14,10 @@
   "build": {
     "appId": "com.ironwill.desktop",
     "productName": "Iron Will V2",
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
     "directories": {
       "output": "release"
     },
