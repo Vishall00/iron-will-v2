@@ -5,6 +5,7 @@ const GameContext = createContext();
 
 export function GameProvider({ children, user }) {
   const [state, setState] = useState({
+    isPremium: false,
     apiKey: '',
     apiService: 'gemini',
     selectedModel: '',
@@ -26,7 +27,7 @@ export function GameProvider({ children, user }) {
        
        let { data: gs } = await supabase.from('game_state').select('*').eq('user_id', user.id).single();
        if (!gs) {
-          gs = { user_id: user.id, xp: 0, last_entry_toll: 0, api_service: 'gemini', api_key: '', selected_model: '' };
+          gs = { user_id: user.id, xp: 0, last_entry_toll: 0, api_service: 'gemini', api_key: '', selected_model: '', is_premium: false };
           await supabase.from('game_state').insert([gs]);
        }
        
@@ -46,6 +47,7 @@ export function GameProvider({ children, user }) {
        const ONE_DAY = 24 * 60 * 60 * 1000;
        
        setState({
+          isPremium: gs.is_premium || false,
           apiKey: gs.api_key || '',
           apiService: gs.api_service || 'gemini',
           selectedModel: gs.selected_model || '',
@@ -68,6 +70,12 @@ export function GameProvider({ children, user }) {
     const { type, payload } = action;
 
     switch (type) {
+      case 'TOGGLE_PREMIUM':
+        const newPrem = !state.isPremium;
+        setState(s => ({ ...s, isPremium: newPrem }));
+        await supabase.from('game_state').update({ is_premium: newPrem }).eq('user_id', user.id);
+        break;
+
       case 'SET_API_KEY':
         setState(s => ({ ...s, apiKey: payload.key, apiService: payload.service, selectedModel: payload.model || '' }));
         await supabase.from('game_state').update({ api_key: payload.key, api_service: payload.service, selected_model: payload.model || '' }).eq('user_id', user.id);
@@ -179,14 +187,14 @@ export function GameProvider({ children, user }) {
   };
 
   useEffect(() => {
-    if (!loading && state.apiKey) {
+    if (!loading && (state.apiKey || state.isPremium)) {
        dispatch({ type: 'CHECK_ROUTINES' });
        const interval = setInterval(() => {
          dispatch({ type: 'CHECK_ROUTINES' });
        }, 60000);
        return () => clearInterval(interval);
     }
-  }, [loading, state.apiKey]);
+  }, [loading, state.apiKey, state.isPremium]);
   
   if (loading) {
     return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}><span className="text-primary font-mono animate-pulse">SYNCING DATABANKS...</span></div>;

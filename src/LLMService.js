@@ -1,3 +1,5 @@
+import { supabase } from './supabaseClient';
+
 export async function fetchAvailableModels(service, key) {
    if (!key) throw new Error("API Key required");
    
@@ -26,7 +28,11 @@ export async function fetchAvailableModels(service, key) {
 }
 
 export async function generateColonelResponse(state, userMessage) {
-   const { apiKey, apiService, selectedModel, chatHistory } = state;
+   const { apiKey, isPremium, apiService, selectedModel, chatHistory } = state;
+
+   if (!apiKey && !isPremium) {
+       throw new Error("No API Key found. Provide an API key or enable Premium.");
+   }
    
    const systemPrompt = `You are "The Colonel", a brutally strict, no-nonsense AI life coach and project manager. 
 The user is speaking with you to formalize their goals, side-incomes, or life projects.
@@ -41,6 +47,15 @@ If you have gathered enough information to formalize a project, you MUST end you
   "newTasks": ["First specific daily requirement", "Second physical or research task"]
 }
 \`\`\``;
+
+   if (!apiKey && isPremium) {
+       const { data, error } = await supabase.functions.invoke('colonel-chat', {
+           body: { userMessage, chatHistory }
+       });
+       if (error) throw new Error(error.message);
+       if (data && data.error) throw new Error(data.error);
+       return data.candidates[0].content.parts[0].text;
+   }
 
    const modelToUse = selectedModel || (apiService === 'gemini' ? 'gemini-1.5-flash' : 'gpt-4o-mini');
 

@@ -413,6 +413,21 @@ function SettingsView({ state, dispatch }) {
                <p className="text-success font-mono" style={{ fontSize: '11px', margin: '15px 0 0 0' }}>Legacy Uplink Active. Click 'Verify' to load specific models.</p>
             )}
          </div>
+
+         <div className="card">
+            <h2 className="text-primary font-mono" style={{ margin: '0 0 10px 0' }}>Command Central Premium</h2>
+            <p className="text-muted" style={{ margin: '0 0 20px 0' }}>Subscribe to unlock the built-in Gemini LLM without generating your own keys.</p>
+            
+            <div style={{ padding: '15px', background: state.isPremium ? 'rgba(16, 185, 129, 0.1)' : 'var(--border-subtle)', borderRadius: '8px', border: state.isPremium ? '1px solid var(--color-success)' : '1px solid transparent', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+               <div>
+                  <strong style={{ display: 'block', color: state.isPremium ? 'var(--color-success)' : 'var(--text-main)' }}>{state.isPremium ? 'Premium Active' : 'Free Tier'}</strong>
+                  <span className="text-muted font-mono" style={{ fontSize: '11px' }}>{state.isPremium ? 'Secure Edge Function Routing Enabled' : 'BYOK Direct Connection Required'}</span>
+               </div>
+               <button onClick={() => dispatch({ type: 'TOGGLE_PREMIUM' })} className={state.isPremium ? 'danger' : 'primary'} style={{ padding: '8px 15px', fontSize: '12px' }}>
+                  {state.isPremium ? '[DEV] CANCEL PREMIUM' : '[DEV] MOCK SUBSCRIBE'}
+               </button>
+            </div>
+         </div>
       </div>
    );
 }
